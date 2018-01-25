@@ -22,7 +22,7 @@ func main() {
 
 	utopianClient := client.Client{BaseUrl: "https://api.utopian.io/api"}
 
-	// sync moderators
+	//// sync moderators
 	log.Println("Sync moderators")
 	moderatorCollection := session.DB("utopiandata").C("moderators")
 	moderators := utopianClient.GetModerators()
@@ -30,7 +30,7 @@ func main() {
 		moderatorCollection.Upsert(bson.M{"account": moderator.Account}, moderator)
 	}
 
-	// sync sponsors
+	//// sync sponsors
 	log.Println("Sync sponsors")
 	sponsorCollection := session.DB("utopiandata").C("sponsors")
 	sponsors := utopianClient.GetSponsors()
@@ -44,7 +44,7 @@ func main() {
 	postList := []client.Post{}
 	posts := utopianClient.GetPosts(nil, nil, postList, false)
 	for _, post := range posts {
-		postCollection.Upsert(bson.M{"_id": post.ID}, post)
+		postCollection.Upsert(bson.M{"_id": post.MongoId}, post)
 	}
 
 	// sync hidden posts

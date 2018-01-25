@@ -11,7 +11,7 @@ Supported collections:
 
 #### Why
 
-I have been working on a seperate *statistics* application (private) for
+I have been working on a separate *statistics* application (private) for
 a while to analyze Utopian data better. However, using a REST API for
 statistics is not practical.
 
@@ -22,13 +22,59 @@ is much better.
 
 #### Example Mongodb aggreegation Queries
 
-TODO
+**Total Contribution Count**
+
+```
+db.posts.find({}).count()
+```
+
+![mongoshell output](https://i.hizliresim.com/y0RzOn.png)
+
+**Top 3 moderators on blog category (moderation count)**
+
+```
+db.posts.aggregate(
+  [
+    {"$match": {"json_metadata.type": "blog"}},
+    {"$group": {_id: "$moderator", count: {$sum : 1}}},
+    {"$sort": {"count": -1}},
+    {"$limit": 3},
+  ]
+)
+```
+
+![mongoshell output](https://i.hizliresim.com/JQ6O1W.png)
+
+**Top Contributors**
+
+```
+db.posts.aggregate(
+  [
+    {"$group": {_id: "$author", count: {$sum : 1}}},
+    {"$sort": {"count": -1}},
+    {"$limit": 3},
+  ]
+)
+```
+
+![mongoshell output](https://i.hizliresim.com/az01VB.png)
+
+And more... You can pretty much filter/group everything you want once
+you learn how [Mongodb aggregation queries](https://docs.mongodb.com/manual/aggregation/) work.
 
 #### Installation and Usage
+
 ```
 $ go get github.com/emre/utopian_data
-$ utopian_data MONGODB_URI
+$ cd $GOPATH
+$ go install github.com/emre/utopian_data
+$ cd `$GOPATH`/bin
+$  utopian_data --mongodb_uri=localhost
 ```
+
+**Output**
+
+![Console Output](https://i.hizliresim.com/D79yqO.png)
 
 
 
