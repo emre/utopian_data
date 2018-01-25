@@ -49,9 +49,10 @@ func main() {
 
 	// sync hidden posts
 	log.Println("Sync hidden posts")
+	postList = []client.Post{}
 	posts = utopianClient.GetPosts(nil, nil, postList, true)
 	for _, post := range posts {
-		postCollection.Upsert(bson.M{"_id": post.ID}, post)
+		postCollection.Upsert(bson.M{"_id": post.MongoId}, post)
 	}
 
 }
