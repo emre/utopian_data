@@ -7,6 +7,7 @@ import (
 	"log"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/fatih/set.v0"
+	"fmt"
 )
 
 func main() {
@@ -64,6 +65,10 @@ func main() {
 	// sync categories
 	log.Println("Sync categories")
 	for _, category := range categories.List() {
+		if len(fmt.Sprintf("%s", category)) < 3 {
+			log.Println("Broken category name. Skipping.")
+			continue
+		}
 		categoryCollection.Upsert(bson.M{"name": category}, bson.M{"name": category})
 	}
 
