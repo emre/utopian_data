@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"log"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/fatih/set.v0"
 )
 
 func main() {
@@ -22,7 +23,10 @@ func main() {
 
 	utopianClient := client.Client{BaseUrl: "https://api.utopian.io/api"}
 
-	//// sync moderators
+	categoryCollection := session.DB("utopiandata").C("categories")
+	categories := set.New()
+
+	// sync moderators
 	log.Println("Sync moderators")
 	moderatorCollection := session.DB("utopiandata").C("moderators")
 	moderators := utopianClient.GetModerators()
@@ -30,7 +34,7 @@ func main() {
 		moderatorCollection.Upsert(bson.M{"account": moderator.Account}, moderator)
 	}
 
-	//// sync sponsors
+	// sync sponsors
 	log.Println("Sync sponsors")
 	sponsorCollection := session.DB("utopiandata").C("sponsors")
 	sponsors := utopianClient.GetSponsors()
@@ -44,6 +48,7 @@ func main() {
 	postList := []client.Post{}
 	posts := utopianClient.GetPosts(nil, nil, postList, false)
 	for _, post := range posts {
+		categories.Add(post.JSONMetadata.Type)
 		postCollection.Upsert(bson.M{"_id": post.MongoId}, post)
 	}
 
@@ -53,6 +58,14 @@ func main() {
 	posts = utopianClient.GetPosts(nil, nil, postList, true)
 	for _, post := range posts {
 		postCollection.Upsert(bson.M{"_id": post.MongoId}, post)
+		categories.Add(post.JSONMetadata.Type)
 	}
+
+	// sync categories
+	log.Println("Sync categories")
+	for _, category := range categories.List() {
+		categoryCollection.Upsert(bson.M{"name": category}, bson.M{"name": category})
+	}
+
 
 }
